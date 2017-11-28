@@ -3,7 +3,7 @@ import math
 
 class FindSong():
 
-    def __init__(self, song, learning_rate, first_generation, mutation_rate):
+    def __init__(self, song, learning_rate, first_generation, mutation_rate, stop=0):
         
         self.notes_to_numbers = {"c": 1, "d": 2, "e": 3, "f": 4, "g": 5, "a": 6, "h": 7}
         self.numbers_to_notes = {1: "c", 2: "d", 3: "e", 4: "f", 5: "g", 6: "a", 7: "h"}
@@ -15,14 +15,20 @@ class FindSong():
         self.learning_rate = learning_rate
         self.first_generation = first_generation
         self.mutation_rate = mutation_rate
+        self.stop = stop
         
-        while self.current_evaluvation > 0:
-            self.songs = self.generation(self.songs, self.learning_rate, self.mutation_rate)
-            self.current_evaluvation = max([self.cost_evaluvation(song, self.final_song) for song in self.songs])
-            self.iteration += 1
-            print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
-            if self.current_evaluvation == 0:
-                break
+        if self.stop == 0:
+            while self.current_evaluvation > 0:
+                self.evolutionary_algoritm()
+        else:
+            while self.iteration < self.stop:
+                self.evolutionary_algoritm()
+                
+    def evolutionary_algoritm(self):
+        self.songs = self.generation(self.songs, self.learning_rate, self.mutation_rate)
+        self.current_evaluvation = max([self.cost_evaluvation(song, self.final_song) for song in self.songs])
+        self.iteration += 1
+        print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
         
     def distance_between_points_2D(self, point1, point2):
         return math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
@@ -86,4 +92,4 @@ class FindSong():
         return song
 
 #FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.7)
-FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.7, 1000, 20)
+FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.7, 10, 1, stop=0)
