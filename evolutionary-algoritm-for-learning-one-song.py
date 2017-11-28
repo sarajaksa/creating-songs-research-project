@@ -3,7 +3,7 @@ import math
 
 class FindSong():
 
-    def __init__(self, song, learning_rate, first_generation, mutation_rate, stop=0, mutation_type="random"):
+    def __init__(self, song, learning_rate, first_generation, mutation_rate, stop=0, mutation_type="random", generation_size=0):
         
         self.notes_to_numbers = {"c": 1, "d": 2, "e": 3, "f": 4, "g": 5, "a": 6, "h": 7}
         self.numbers_to_notes = {1: "c", 2: "d", 3: "e", 4: "f", 5: "g", 6: "a", 7: "h"}
@@ -17,6 +17,10 @@ class FindSong():
         self.mutation_rate = mutation_rate
         self.stop = stop
         self.mutation_type = mutation_type
+        if generation_size == 0:
+            self.generation_size = first_generation
+        else:
+            self.generation_size = generation_size
         
         if self.stop == 0:
             while self.current_evaluvation > 0:
@@ -26,8 +30,10 @@ class FindSong():
                 self.evolutionary_algoritm()
                 
     def evolutionary_algoritm(self):
-        self.songs = self.generation(self.songs, self.learning_rate, self.mutation_rate)
-        self.current_evaluvation = max([self.cost_evaluvation(song, self.final_song) for song in self.songs])
+        songs = self.generation(self.songs, self.learning_rate, self.mutation_rate) + self.songs
+        cut_rate = max(sorted([self.cost_evaluvation(song, self.final_song) for song in songs])[:self.generation_size])
+        self.songs = [song for song in songs if self.cost_evaluvation(song, self.final_song) < cut_rate]
+        self.current_evaluvation = min([self.cost_evaluvation(song, self.final_song) for song in self.songs])
         self.iteration += 1
         print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
         
@@ -48,8 +54,7 @@ class FindSong():
                     song_new = self.mutation_random(song, learning_rate)
                 else:
                     song_new = self.mutation_certain(song)
-                if self.cost_evaluvation(song_new, self.final_song) <= self.current_evaluvation:
-                    new_songs.append(song_new)
+                new_songs.append(song_new)
         return new_songs
     
     def mutation_random(self, song, learning_rate):
@@ -109,4 +114,4 @@ class FindSong():
         return song
 
 #FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.7)
-FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.7, 10, 1, stop=0, mutation_type="certain")
+FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.8, 1000, 10, stop=0, mutation_type="random", generation_size=0)
