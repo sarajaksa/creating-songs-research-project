@@ -3,7 +3,7 @@ import math
 
 class FindSong():
 
-    def __init__(self, song, learning_rate, first_generation, mutation_rate, stop=0):
+    def __init__(self, song, learning_rate, first_generation, mutation_rate, stop=0, mutation_type="random"):
         
         self.notes_to_numbers = {"c": 1, "d": 2, "e": 3, "f": 4, "g": 5, "a": 6, "h": 7}
         self.numbers_to_notes = {1: "c", 2: "d", 3: "e", 4: "f", 5: "g", 6: "a", 7: "h"}
@@ -16,6 +16,7 @@ class FindSong():
         self.first_generation = first_generation
         self.mutation_rate = mutation_rate
         self.stop = stop
+        self.mutation_type = mutation_type
         
         if self.stop == 0:
             while self.current_evaluvation > 0:
@@ -43,12 +44,15 @@ class FindSong():
         while all_songs:
             song = all_songs.pop()
             for i in range(mutation_rate):
-                song_new = self.mutation(song, learning_rate)
+                if self.mutation_type == "random":
+                    song_new = self.mutation_random(song, learning_rate)
+                else:
+                    song_new = self.mutation_certain(song)
                 if self.cost_evaluvation(song_new, self.final_song) <= self.current_evaluvation:
                     new_songs.append(song_new)
         return new_songs
     
-    def mutation(self, song, learning_rate):
+    def mutation_random(self, song, learning_rate):
         mutated_song = []
         for note, duration in song:
             if random.random() > learning_rate:
@@ -67,6 +71,19 @@ class FindSong():
                         duration = duration - 1
             mutated_song.append((note, duration))
         return mutated_song
+        
+    def mutation_certain(self, song):
+        random_position, random_type, random_change = random.randint(0,len(song)-1), random.randint(0,1), random.randint(1,2)
+        if random_type == 0 and random_change == 1 and song[random_position][random_type] != 1:
+            song[random_position] = (song[random_position][0], song[random_position][1] -1)
+        elif random_type == 1 and random_change == 1 and song[random_position][random_type] != 1:
+            song[random_position] = (song[random_position][0], song[random_position][1] - 1)
+        elif random_type == 0 and random_change == 2 and song[random_position][random_type] != 7:
+            song[random_position] = (song[random_position][0], song[random_position][1] + 1)
+        elif random_type == 1 and random_change == 2 and song[random_position][random_type] != 3:
+            song[random_position] = (song[random_position][0], song[random_position][1] + 1)
+        return song
+        
         
     def change_representation_to_number(self, song_lilypond):
         return [(int(self.notes_to_numbers[i[0]]), int(math.log2(int(i[1])))) for i in song_lilypond]
@@ -92,4 +109,4 @@ class FindSong():
         return song
 
 #FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.7)
-FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.7, 10, 1, stop=0)
+FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.7, 10, 1, stop=0, mutation_type="certain")
