@@ -3,7 +3,7 @@ import math
 
 class FindSong():
 
-    def __init__(self, song, learning_rate, first_generation, mutation_rate, stop=0, mutation_type="random", generation_size=0, selection="elite", remove_duplicate=True):
+    def __init__(self, song, learning_rate, first_generation, mutation_rate, stop=0, mutation_type="random", generation_size=0, selection="normal", remove_duplicate=True):
         
         self.notes_to_numbers = {"c": 1, "d": 2, "e": 3, "f": 4, "g": 5, "a": 6, "h": 7}
         self.numbers_to_notes = {1: "c", 2: "d", 3: "e", 4: "f", 5: "g", 6: "a", 7: "h"}
@@ -32,20 +32,30 @@ class FindSong():
                 self.evolutionary_algoritm()
                 
     def evolutionary_algoritm(self):
-        songs = self.generation(self.songs, self.learning_rate, self.mutation_rate) + self.songs
+        songs_crossover = self.crossover(self.songs)
+        songs = self.generation(songs_crossover + self.songs, self.learning_rate, self.mutation_rate) + self.songs + songs_crossover
         if self.selection == "elite":
             cut_rate = min(sorted([self.cost_evaluvation(song, self.final_song) for song in songs])[:self.generation_size])
         else:
             cut_rate = max(sorted([self.cost_evaluvation(song, self.final_song) for song in songs])[:self.generation_size])
-        self.songs = [song for song in songs if self.cost_evaluvation(song, self.final_song) <= cut_rate]
-        if self.selection == "elite":
-            self.songs = self.songs[:self.generation_size]
+        self.songs = [song for song in songs if self.cost_evaluvation(song, self.final_song) < cut_rate]
+        if not self.songs:
+            self.songs = [song for song in songs if self.cost_evaluvation(song, self.final_song) <= cut_rate][:self.generation_size]
         if self.remove_duplicate:
             #Find a way to remove duplicates
             pass
         self.current_evaluvation = min([self.cost_evaluvation(song, self.final_song) for song in self.songs])
         self.iteration += 1
         print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
+
+    def crossover(self, songs):
+        newsongs = []
+        crossover_point = random.randint(1, len(songs[0])-1)
+        while len(songs) > 1:
+            song1, song2 = songs.pop(), songs.pop(0)
+            newsongs.append(song1[:crossover_point] + song2[crossover_point:])
+            newsongs.append(song2[:crossover_point] + song1[crossover_point:])
+        return newsongs
         
     def distance_between_points_2D(self, point1, point2):
         return math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
@@ -123,5 +133,5 @@ class FindSong():
         song = [(random.randint(1,7), random.randint(1,3)) for i in range(length)]
         return song
 
-#FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.7)
-FindSong("e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 e4 d4 d2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2 d4 d4 e4 c4 d4 f4 e4 c4 d4 f4 e4 d4 c4 d4 g2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2", 0.99, 25, 10, stop=0, mutation_type="random", generation_size=0, selection="elite", remove_duplicate=True)
+#FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.95, 100, 10)
+FindSong("e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 e4 d4 d2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2 d4 d4 e4 c4 d4 f4 e4 c4 d4 f4 e4 d4 c4 d4 g2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2", 0.98, 100, 10, stop=0, mutation_type="random", generation_size=0, remove_duplicate=True)
