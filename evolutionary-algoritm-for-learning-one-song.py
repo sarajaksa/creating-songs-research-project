@@ -3,7 +3,7 @@ import math
 
 class FindSong():
 
-    def __init__(self, song, learning_rate, first_generation, mutation_rate, stop=0, mutation_type="random", generation_size=0, selection="normal", remove_duplicate=True):
+    def __init__(self, song, learning_rate, first_generation, mutation_rate, stop=0, mutation_type="random", generation_size=0, selection="normal", remove_duplicate=True, filename="song.ly"):
         """
         Class capable of evolutionary evolving a song to be the same as the one inputed in
         
@@ -16,6 +16,7 @@ class FindSong():
         :paras generation_size: the size of generation in each iteration (if 0, then generation_size is the same as first_generation size)
         :paras selection: the criteria used for selecting the people in new generation (elite => only the best elements are selected, normal => best x elements is selected, where x is the generation_size)
         :paras remove_duplicate: removes duplicates from the generation
+        :paras filename: the name of the file with the lilypond results (.ly)
         """
         
         self.notes_to_numbers = {"c": 1, "d": 2, "e": 3, "f": 4, "g": 5, "a": 6, "h": 7}
@@ -66,7 +67,7 @@ class FindSong():
         current_evaluvation = min([self.cost_evaluvation(song, self.final_song) for song in self.songs])
         if self.current_evaluvation > current_evaluvation:
             self.current_evaluvation = current_evaluvation
-            self.write_music_to_file(7, self.create_new_song([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0], self.iteration))
+            self.write_music_to_file(filename, self.create_new_song([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0], self.iteration))
         self.iteration += 1
         print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
 
@@ -223,7 +224,7 @@ class FindSong():
         music += "\score {\n<<\n\\new Staff { \\relative c' \\symbols }\n>>\n\midi { }\n\layout { }\n}\n\n\n"
         return music
         
-    def write_music_to_file(self, iteration, music):
+    def write_music_to_file(self, filename, music):
         """
         Writes content to the lilypond file with name song_(iteration number).ly.
         
@@ -231,7 +232,7 @@ class FindSong():
         :param music: content to be written in a file
         :return: None
         """
-        with open("song_" + str(iteration) + ".ly", "a") as write:
+        with open(filename, "a") as write:
             write.write(music)
             
     def create_random_sound(self, length):
@@ -244,5 +245,5 @@ class FindSong():
         song = [(random.randint(1,7), random.randint(1,3)) for i in range(length)]
         return song
 
-FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.95, 100, 10)
+FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.95, 100, 10, filename="song_11.ly")
 #FindSong("e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 e4 d4 d2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2 d4 d4 e4 c4 d4 f4 e4 c4 d4 f4 e4 d4 c4 d4 g2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2", 0.97, 100, 10, stop=0, mutation_type="random", generation_size=0, remove_duplicate=True)
