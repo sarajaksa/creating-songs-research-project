@@ -66,7 +66,7 @@ class FindSong():
         current_evaluvation = min([self.cost_evaluvation(song, self.final_song) for song in self.songs])
         if self.current_evaluvation > current_evaluvation:
             self.current_evaluvation = current_evaluvation
-            self.write_music_to_file(2, self.create_new_song([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0], self.iteration))
+            self.write_music_to_file(7, self.create_new_song([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0], self.iteration))
         self.iteration += 1
         print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
 
@@ -220,7 +220,7 @@ class FindSong():
         music = '\\version "2.18.2"\n'
         music += "\markup {\\fill-line {\\column \\bold  {\line { Iteration: " + str(iteration) + "}}}}\n\n"
         music += 'symbols = {' + self.create_lilypond_colored_representation(self.change_representation_to_lilypond(song), self.final_song_lilypond) + '}\n'
-        music += "\score {\n<<\n\\new Staff { \\relative c' \\symbols }\n>>\n}\n\n\n"
+        music += "\score {\n<<\n\\new Staff { \\relative c' \\symbols }\n>>\n\midi { }\n\layout { }\n}\n\n\n"
         return music
         
     def write_music_to_file(self, iteration, music):
