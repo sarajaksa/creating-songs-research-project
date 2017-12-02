@@ -1,3 +1,4 @@
+import subprocess
 import random
 import math
 
@@ -38,6 +39,7 @@ class FindSong():
             self.generation_size = generation_size
         self.selection = selection
         self.remove_duplicate = remove_duplicate
+        self.filename = filename
         
         if self.stop == 0:
             while self.current_evaluvation > 0:
@@ -45,6 +47,8 @@ class FindSong():
         else:
             while self.iteration < self.stop:
                 self.evolutionary_algoritm()
+        
+        subprocess.call(["lilypond", self.filename])
                 
     def evolutionary_algoritm(self):
         """
@@ -67,7 +71,7 @@ class FindSong():
         current_evaluvation = min([self.cost_evaluvation(song, self.final_song) for song in self.songs])
         if self.current_evaluvation > current_evaluvation:
             self.current_evaluvation = current_evaluvation
-            self.write_music_to_file(filename, self.create_new_song([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0], self.iteration))
+            self.write_music_to_file(self.filename, self.create_new_song([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0], self.iteration))
         self.iteration += 1
         print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
 
