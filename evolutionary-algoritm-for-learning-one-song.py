@@ -22,6 +22,7 @@ class FindSong():
         self.numbers_to_notes = {1: "c", 2: "d", 3: "e", 4: "f", 5: "g", 6: "a", 7: "h"}
         
         self.final_song = self.change_representation_to_number(song.split(" "))
+        self.final_song_lilypond = song
         self.songs = [self.create_random_sound(len(self.final_song)) for i in range(first_generation)]
         self.iteration = 0
         self.current_evaluvation = max([self.cost_evaluvation(song, self.final_song) for song in self.songs])
@@ -65,7 +66,7 @@ class FindSong():
         current_evaluvation = min([self.cost_evaluvation(song, self.final_song) for song in self.songs])
         if self.current_evaluvation > current_evaluvation:
             self.current_evaluvation = current_evaluvation
-            self.write_music_to_file(10, self.create_new_song([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0], self.iteration))
+            self.write_music_to_file(2, self.create_new_song([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0], self.iteration))
         self.iteration += 1
         print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
 
@@ -188,7 +189,25 @@ class FindSong():
         :param song_lilypond: song in its numerical form
         :return: song in a lilypond form
         """
+        
         return " ".join(["".join([n, d]) for n, d in [(str(self.numbers_to_notes[i[0]]), str(2**i[1])) for i in song_lilypond]])
+        
+    def create_lilypond_colored_representation(self, song_lilypond, final_song_lilypond):
+        """
+        Compares the two lilypond songs and colors the notes that differ
+        
+        :paras song_lilypond: the song in the lilypond format
+        :paras final_song_lilypond: the song in the lilypond format, that serves as comparions
+        :return: the colored song in lilypond format
+        """
+        final_song = []
+        song_lilypond = song_lilypond.split(" ")
+        final_song_lilypond = final_song_lilypond.split(" ")
+        for s, f in zip(song_lilypond, final_song_lilypond):
+            if s != f:
+                final_song.append("\once \override NoteHead.color = #red \once \override Stem.color = #red")
+            final_song.append(s)
+        return " ".join(final_song)
         
     def create_new_song(self, song, iteration):
         """
@@ -200,7 +219,7 @@ class FindSong():
         """
         music = '\\version "2.18.2"\n'
         music += "\markup {\\fill-line {\\column \\bold  {\line { Iteration: " + str(iteration) + "}}}}\n\n"
-        music += 'symbols = {' + self.change_representation_to_lilypond(song) + '}\n'
+        music += 'symbols = {' + self.create_lilypond_colored_representation(self.change_representation_to_lilypond(song), self.final_song_lilypond) + '}\n'
         music += "\score {\n<<\n\\new Staff { \\relative c' \\symbols }\n>>\n}\n\n\n"
         return music
         
