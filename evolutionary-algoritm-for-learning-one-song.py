@@ -247,7 +247,7 @@ class FindSong():
         :return: list of notes, defined by tuples of number indicating the pitch and number indicating the duration
         """
         song = [(random.randint(1,7), random.randint(1,3)) for i in range(length)]
-        return song
+        return song 
 
 FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.95, 100, 10, filename="song_11.ly")
 #FindSong("e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 e4 d4 d2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2 d4 d4 e4 c4 d4 f4 e4 c4 d4 f4 e4 d4 c4 d4 g2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2", 0.97, 100, 10, stop=0, mutation_type="random", generation_size=0, remove_duplicate=True)
