@@ -20,8 +20,8 @@ class FindSong():
         :paras filename: the name of the file with the lilypond results (.ly)
         """
         
-        self.notes_to_numbers = {"c": 1, "d": 2, "e": 3, "f": 4, "g": 5, "a": 6, "h": 7}
-        self.numbers_to_notes = {1: "c", 2: "d", 3: "e", 4: "f", 5: "g", 6: "a", 7: "h"}
+        self.notes_to_numbers = {"c": 1, "des": 2, "d": 3, "ees":4, "e": 5, "f": 6, "ges":7, "g": 8, "aes":9, "a": 10, "hes":11, "h": 12, "pause": 13}
+        self.numbers_to_notes = {1: "c", 2: "des", 3: "d", 4:"ees", 5: "e", 6: "f", 7: "ges", 8: "g", 9: "aes", 10: "a", 11: "hes", 12: "h", 13: "pause"}
         
         self.final_song = self.change_representation_to_number(song.split(" "))
         self.final_song_lilypond = song
@@ -246,7 +246,7 @@ class FindSong():
         :param length: the number of notes in the music created
         :return: list of notes, defined by tuples of number indicating the pitch and number indicating the duration
         """
-        song = [(random.randint(1,7), random.randint(1,3)) for i in range(length)]
+        song = [(random.randint(1,13), random.randint(1,3)) for i in range(length)]
         return song 
 
 FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.95, 100, 10, filename="song_11.ly")
