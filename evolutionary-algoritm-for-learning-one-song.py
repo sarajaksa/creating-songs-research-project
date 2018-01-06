@@ -4,7 +4,7 @@ import math
 
 class FindSong():
 
-    def __init__(self, song, learning_rate, first_generation, mutation_rate, stop=0, mutation_type="random", generation_size=0, selection="normal", remove_duplicate=True, filename="song.ly"):
+    def __init__(self, song="c4", learning_rate=0.97, first_generation=100, mutation_rate=10, stop=0, mutation_type="random", generation_size=0, selection="normal", remove_duplicate=True, filename="song.ly"):
         """
         Class capable of evolutionary evolving a song to be the same as the one inputed in
         
@@ -23,6 +23,7 @@ class FindSong():
         self.notes_to_numbers = {"c": 1, "des": 2, "d": 3, "ees":4, "e": 5, "f": 6, "ges":7, "g": 8, "aes":9, "a": 10, "hes":11, "h": 12, "pause": 13}
         self.numbers_to_notes = {1: "c", 2: "des", 3: "d", 4:"ees", 5: "e", 6: "f", 7: "ges", 8: "g", 9: "aes", 10: "a", 11: "hes", 12: "h", 13: "pause"}
         
+        self.all_file_names = []
         self.final_song = self.change_representation_to_number(song.split(" "))
         self.final_song_lilypond = song
         self.songs = [self.create_random_sound(len(self.final_song)) for i in range(first_generation)]
@@ -41,6 +42,8 @@ class FindSong():
         self.remove_duplicate = remove_duplicate
         self.filename = filename
         
+        
+    def evolving(self):
         if self.stop == 0:
             while self.current_evaluvation > 0:
                 self.evolutionary_algoritm()
@@ -48,7 +51,8 @@ class FindSong():
             while self.iteration < self.stop:
                 self.evolutionary_algoritm()
         
-        subprocess.call(["lilypond", self.filename])
+        #for filename in self.all_file_names:
+        #    subprocess.call(["lilypond", "--png", filename])
                 
     def evolutionary_algoritm(self):
         """
@@ -56,6 +60,7 @@ class FindSong():
         
         :return: None
         """
+        self.iteration += 1
         songs_crossover = self.crossover(self.songs)
         songs = self.generation(songs_crossover + self.songs, self.learning_rate, self.mutation_rate) + self.songs + songs_crossover
         if self.selection == "elite":
@@ -71,9 +76,10 @@ class FindSong():
         current_evaluvation = min([self.cost_evaluvation(song, self.final_song) for song in self.songs])
         if self.current_evaluvation > current_evaluvation:
             self.current_evaluvation = current_evaluvation
-            self.write_music_to_file(self.filename, self.create_new_song([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0], self.iteration))
-        self.iteration += 1
-        print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
+            self.write_music_to_file(self.filename, self.create_new_song(self.change_representation_to_lilypond([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0])))
+            #self.all_file_names.append(self.filename + str(self.iteration) + ".ly")
+        #print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
+        subprocess.call(["lilypond", "--png", self.filename])
 
     def crossover(self, songs):
         """
@@ -213,8 +219,11 @@ class FindSong():
                 final_song.append("\once \override NoteHead.color = #red \once \override Stem.color = #red")
             final_song.append(s)
         return " ".join(final_song)
+
+    def create_new_colored_song(self, song, iteration):
+        self.create_new_song(self.create_lilypond_colored_representation(song, self.final_song_lilypond), iteration)
         
-    def create_new_song(self, song, iteration):
+    def create_new_song(self, song, iteration=None):
         """
         Takes the music and formates it in the lilypond style.
         
@@ -222,9 +231,10 @@ class FindSong():
         :param iteration: the number that is used to create the title for this part of lilypond fragment
         :return: Music formated as lilypond fragment
         """
-        music = '\\version "2.18.2"\n'
-        music += "\markup {\\fill-line {\\column \\bold  {\line { Iteration: " + str(iteration) + "}}}}\n\n"
-        music += 'symbols = {' + self.create_lilypond_colored_representation(self.change_representation_to_lilypond(song), self.final_song_lilypond) + '}\n'
+        music = '\\version "2.18.2"\n\n'
+        if iteration:
+            music += "\markup {\\fill-line {\\column \\bold  {\line { Iteration: " + str(iteration) + "}}}}\n\n"
+        music += 'symbols = {' + song + '}\n'
         music += "\score {\n<<\n\\new Staff { \\relative c' \\symbols }\n>>\n\midi { }\n\layout { }\n}\n\n\n"
         return music
         
@@ -236,7 +246,7 @@ class FindSong():
         :param music: content to be written in a file
         :return: None
         """
-        with open(filename, "a") as write:
+        with open(filename, "w") as write:
             write.write(music)
             
     def create_random_sound(self, length):
@@ -248,6 +258,3 @@ class FindSong():
         """
         song = [(random.randint(1,13), random.randint(1,3)) for i in range(length)]
         return song 
-
-FindSong("d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4", 0.95, 100, 10, filename="song_11.ly")
-#FindSong("e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 e4 d4 d2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2 d4 d4 e4 c4 d4 f4 e4 c4 d4 f4 e4 d4 c4 d4 g2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2", 0.97, 100, 10, stop=0, mutation_type="random", generation_size=0, remove_duplicate=True)
