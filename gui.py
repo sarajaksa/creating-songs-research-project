@@ -40,6 +40,9 @@ class GenerateMusic(QtWidgets.QDialog):
         layout.addWidget(self.evolveExistingSong)
         self.typesOfMusic = QtWidgets.QComboBox()
         layout.addWidget(self.typesOfMusic)
+        self.typesOfMusic.addItem("None")
+        self.typesOfMusic.addItem("Basic")
+        self.typesOfMusic.addItem("C Key Cords")
         self.lengthOfMusic = QtWidgets.QDoubleSpinBox()
         self.lengthOfMusic.setRange(1, 30)
         self.lengthOfMusic.setValue(8)
@@ -75,6 +78,7 @@ class GenerateMusic(QtWidgets.QDialog):
         self.differentSongs.currentIndexChanged.connect(self.changeSong)
         self.stopButton.clicked.connect(self.stopLearning)
         self.evolveExistingSong.clicked.connect(self.startEvolving)
+        self.evolveNewSong.clicked.connect(self.startEvolving2)
         self.iteration.clicked.connect(self.oneIteration)
         self.evolTimer.timeout.connect(self.oneIteration)
         self.playFinal.clicked.connect(self.playFinalSong)
@@ -82,7 +86,7 @@ class GenerateMusic(QtWidgets.QDialog):
         self.evolutionAlgoritm = FindSong()
         
     def playFinalSong(self):
-        subprocess.call(["timidity", "song_final.midi"])
+        subprocess.call(["timidity", "song_final.midi"], stdout=FNULL, stderr=subprocess.STDOUT)
         
     def changeImage(self):
         self.crop_image("song_final.png")
@@ -107,7 +111,12 @@ class GenerateMusic(QtWidgets.QDialog):
             self.numIte.setText("Number of iteration: " + str(self.evolutionAlgoritm.iteration) + ", (ended)")
         
     def startEvolving(self):
-        self.evolutionAlgoritm = FindSong(song=self.final_song_lilypond, filename="song_final.ly")
+        self.evolutionAlgoritm = FindSong(song=None, filename="song_final.ly")
+        self.executing = True
+        self.evolTimer.start()
+        
+    def startEvolving2(self):
+        self.evolutionAlgoritm = FindSong(song=self.final_song_lilypond, filename="song_final.ly", duration=int(self.lengthOfMusic.value()), type_of_evaluvation=self.typesOfMusic.currentText())
         self.executing = True
         self.evolTimer.start()
         
