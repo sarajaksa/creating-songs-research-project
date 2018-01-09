@@ -1,14 +1,15 @@
 import sys
+import os
 import time
 import math
 import subprocess
-#from PyQt5 import QtCore
+from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 from PIL import Image
-#from PIL import ImageChops
 from evo import FindSong
 
+FNULL = open(os.devnull, 'w')
 
 class GenerateMusic(QtWidgets.QDialog):
 
@@ -20,7 +21,7 @@ class GenerateMusic(QtWidgets.QDialog):
         self.songs = [("None", ""), ("Kuza Pazi", "d8 d8 d8 d8 e8 e8 e8 e8 f8 f8 e8 e8 d8 d8 d4"), ("Ode of Joy", "e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 e4 d4 d2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2 d4 d4 e4 c4 d4 f4 e4 c4 d4 f4 e4 d4 c4 d4 g2 e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 d4 c4 c2")]
         
         super(GenerateMusic, self).__init__(parent)
-        #self.resize(800,600)
+        
         self.setWindowTitle("Create Music My Using Evolutionary Algoritms")
         layout = QtWidgets.QVBoxLayout()
         self.differentSongs = QtWidgets.QComboBox()
@@ -33,6 +34,8 @@ class GenerateMusic(QtWidgets.QDialog):
         layout.addWidget(self.imageLabel)
         self.final_song_notes = QtGui.QImage("beginning.png")
         self.imageLabel.setPixmap(QtGui.QPixmap.fromImage(self.final_song_notes))
+        self.genSong = QtWidgets.QPushButton("Generate Song")
+        layout.addWidget(self.genSong)
         self.evolveExistingSong = QtWidgets.QPushButton("Evolve Existing Song")
         layout.addWidget(self.evolveExistingSong)
         self.typesOfMusic = QtWidgets.QComboBox()
@@ -41,6 +44,7 @@ class GenerateMusic(QtWidgets.QDialog):
         self.lengthOfMusic.setRange(1, 30)
         self.lengthOfMusic.setValue(8)
         layout.addWidget(self.lengthOfMusic)
+        self.executing = False
         self.evolveNewSong = QtWidgets.QPushButton("Evolve New Song")
         layout.addWidget(self.evolveNewSong)
         
@@ -49,28 +53,36 @@ class GenerateMusic(QtWidgets.QDialog):
         self.evolvingSongNotes = QtGui.QImage("beginning.png")
         self.imageEvolving.setPixmap(QtGui.QPixmap.fromImage(self.evolvingSongNotes))
         
+        self.numIte = QtWidgets.QLabel()
+        self.numIte.setText("Number of iteration: 0")
+        layout.addWidget(self.numIte)
+        
         self.iteration = QtWidgets.QPushButton("Next Iteration")
         layout.addWidget(self.iteration)
         
-        self.stop = False
         self.stopButton = QtWidgets.QPushButton("Stop Evolving")
         layout.addWidget(self.stopButton)
+        
+        self.playFinal = QtWidgets.QPushButton("Play Current Iteration")
+        layout.addWidget(self.playFinal)
+        
+        self.evolTimer = QtCore.QTimer()
+        self.evolTimer.stop()
 
         self.setLayout(layout)
         
-        self.addingMusic.returnPressed.connect(self.checkInputedMusic)
+        self.genSong.clicked.connect(self.checkInputedMusic)
         self.differentSongs.currentIndexChanged.connect(self.changeSong)
         self.stopButton.clicked.connect(self.stopLearning)
         self.evolveExistingSong.clicked.connect(self.startEvolving)
-        #self.evolvingSongNotes.notFinished.connect(self.oneIteration)
         self.iteration.clicked.connect(self.oneIteration)
-        
-        
-        
-        #when end of iteration:
-        #element.iteration.connect(what to do at this time)
+        self.evolTimer.timeout.connect(self.oneIteration)
+        self.playFinal.clicked.connect(self.playFinalSong)
         
         self.evolutionAlgoritm = FindSong()
+        
+    def playFinalSong(self):
+        subprocess.call(["timidity", "song_final.midi"])
         
     def changeImage(self):
         self.crop_image("song_final.png")
@@ -78,18 +90,26 @@ class GenerateMusic(QtWidgets.QDialog):
         self.imageEvolving.setPixmap(QtGui.QPixmap.fromImage(self.evolvingSongNotes))
         
     def stopLearning(self):
-        self.stop = True
+        self.executing = False
         
-        
-    def startEvolving(self):
-        self.evolutionAlgoritm = FindSong(song=self.final_song_lilypond, filename="song_final.ly")
-        self.oneIteration()
-                    
     def oneIteration(self):
-        if self.stop == True:
+        if self.executing == False:
+            self.evolTimer.stop()
             return None
         self.evolutionAlgoritm.evolutionary_algoritm()
         self.changeImage()
+        self.numIte.setText("Number of iteration: " + str(self.evolutionAlgoritm.iteration))
+        if self.evolutionAlgoritm.stop == 0 and not self.evolutionAlgoritm.current_evaluvation > 0:
+            self.executing = False
+            self.numIte.setText("Number of iteration: " + str(self.evolutionAlgoritm.iteration) + ", (ended)")
+        if self.evolutionAlgoritm.stop != 0 and not self.iteration < self.stop:
+            self.executing = False
+            self.numIte.setText("Number of iteration: " + str(self.evolutionAlgoritm.iteration) + ", (ended)")
+        
+    def startEvolving(self):
+        self.evolutionAlgoritm = FindSong(song=self.final_song_lilypond, filename="song_final.ly")
+        self.executing = True
+        self.evolTimer.start()
         
     def changeSong(self, index):
         self.addingMusic.setText(self.songs[index][1])
@@ -104,13 +124,10 @@ class GenerateMusic(QtWidgets.QDialog):
         self.final_song_lilypond = self.addingMusic.text()
         music = self.evolutionAlgoritm.create_new_song(self.final_song_lilypond, 0)
         self.evolutionAlgoritm.write_music_to_file("song.ly", music)
-        subprocess.call(["lilypond", "--png", "song.ly"])
+        subprocess.call(["lilypond", "--png", "song.ly"], stdout=FNULL, stderr=subprocess.STDOUT)
         self.crop_image("song.png")
         self.final_song_notes = QtGui.QImage("song.png")
         self.imageLabel.setPixmap(QtGui.QPixmap.fromImage(self.final_song_notes))
-        
-    def endOfIteration(self):
-        self.emit(SIGNAL("iteration"))
         
 
 app = QtWidgets.QApplication(sys.argv)

@@ -1,6 +1,9 @@
 import subprocess
 import random
 import math
+import os
+
+FNULL = open(os.devnull, 'w')
 
 class FindSong():
 
@@ -50,9 +53,6 @@ class FindSong():
         else:
             while self.iteration < self.stop:
                 self.evolutionary_algoritm()
-        
-        #for filename in self.all_file_names:
-        #    subprocess.call(["lilypond", "--png", filename])
                 
     def evolutionary_algoritm(self):
         """
@@ -77,9 +77,7 @@ class FindSong():
         if self.current_evaluvation > current_evaluvation:
             self.current_evaluvation = current_evaluvation
             self.write_music_to_file(self.filename, self.create_new_song(self.change_representation_to_lilypond([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0])))
-            #self.all_file_names.append(self.filename + str(self.iteration) + ".ly")
-        #print(str(self.iteration) + ": " + str(self.current_evaluvation) + ", " + str(len(self.songs)))
-        subprocess.call(["lilypond", "--png", self.filename])
+        subprocess.call(["lilypond", "--png", self.filename], stdout=FNULL, stderr=subprocess.STDOUT)
 
     def crossover(self, songs):
         """
@@ -89,6 +87,8 @@ class FindSong():
         :return: list of the songs in the ofspring generation
         """
         newsongs = []
+        if len(songs[0])-1 == 0:
+            return songs
         crossover_point = random.randint(1, len(songs[0])-1)
         while len(songs) > 1:
             song1, song2 = songs.pop(), songs.pop(0)
