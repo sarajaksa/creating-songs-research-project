@@ -44,7 +44,7 @@ class GenerateMusic(QtWidgets.QDialog):
         self.typesOfMusic.addItem("Basic")
         self.typesOfMusic.addItem("C Key Cords")
         self.lengthOfMusic = QtWidgets.QDoubleSpinBox()
-        self.lengthOfMusic.setRange(1, 30)
+        self.lengthOfMusic.setRange(1, 100)
         self.lengthOfMusic.setValue(8)
         layout.addWidget(self.lengthOfMusic)
         self.executing = False
@@ -89,6 +89,9 @@ class GenerateMusic(QtWidgets.QDialog):
         subprocess.call(["timidity", "song_final.midi"], stdout=FNULL, stderr=subprocess.STDOUT)
         
     def changeImage(self):
+        if "song_final.png":
+            #here check if is already cropped, and if it is, do not crop it again
+            pass
         self.crop_image("song_final.png")
         self.evolvingSongNotes = QtGui.QImage("song_final.png")
         self.imageEvolving.setPixmap(QtGui.QPixmap.fromImage(self.evolvingSongNotes))

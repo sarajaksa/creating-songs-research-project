@@ -175,13 +175,13 @@ class FindSong():
     def cost_c_try(self, song):
         cost = 0
         #add the cost of two notes repeating the pitch
-        cost = cost + sum([1 for note1, note2 in zip(song[:-1], song[1:]) if note1[0] == note2[0]])
+        cost = cost + 10*sum([1 for note1, note2 in zip(song[:-1], song[1:]) if note1[0] == note2[0]])
         #add the cost of notes having too big of a pitch
         cost = cost + sum([abs(note1[0] - note2[0])**2 for note1, note2 in zip(song[:-1], song[1:]) if not abs(note1[0] - note2[0]) == 1])
         #add cost of notes having too big of a difference in duration
-        cost = cost + sum([abs(note1[1] - note2[1]) for note1, note2 in zip(song[:-1], song[1:]) if abs(note1[1] - note2[1]) > 1])
+        cost = cost + sum([abs(note1[1] - note2[1]) if abs(note1[1] - note2[1]) > 1 else 1 for note1, note2 in zip(song[:-1], song[1:])])
         #add cost of long notes
-        cost = cost + sum([1/note1[1] if not note1[1] == 0 else 2 for note1 in song])
+        cost = cost + 2*sum([1/note1[1] if not note1[1] == 0 else 2 for note1 in song])
         #add cost for keys
         cost = cost + sum([25 for note in song if note[0] not in self.keys[0]])
         #add cost for cords
@@ -253,17 +253,17 @@ class FindSong():
             if random.random() > learning_rate:
                 if random.random() > 0.5:
                     if note != 13:
-                        note = note + 1
+                        note = 1
                 else: 
                     if note != 1:
-                        note = note - 1
+                        note = 13
             if random.random() > learning_rate:
                 if random.random() > 0.5:
                     if note != 4:
-                        duration = duration + 1
+                        duration = 0
                 else: 
                     if note != 0:
-                        duration = duration - 1
+                        duration = 4
             mutated_song.append((note, duration))
         return mutated_song
         
