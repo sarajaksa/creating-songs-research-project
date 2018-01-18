@@ -207,6 +207,35 @@ class FindSong():
             duration = 0
             current_notes = []
         return cost  
+
+    def cost_article1_try(self, song, final_song=None):
+        # Based on article: Minimal Fitness Functions in Genetic Algorithms for the Composition of Piano Music by Rodney Waschka II
+        cost = 0
+        duration = 0
+        for pitch, dur in song:
+            if dur == 0 and duration != 0:
+                cost = cost + 50
+                break
+            elif dur != 0:
+                duration = duration + 1/dur**2
+            if dur == 0 and duration == 0:
+                duration == 1
+            if duration > 1:
+                cost = cost + 50
+                break
+            if duration == 1:
+                duration == 0
+                continue
+        pitches = [pitch for pitch, dur in song]
+        if not set(pitches).intersection(set([2,4,7,9,11])):
+            cost = cost + 50
+        if 1 in [dur for pitch, dur in song]:
+            cost = cost + 50
+        if not 4 in [dur for pitch, dur in song]:
+            cost = cost + 50
+        if 7 in pitches or 9 in pitches:
+            cost = cost + 50
+        return cost
         
     def cost_evaluvation(self, song, final_song):
         """
