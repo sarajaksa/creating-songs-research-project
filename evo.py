@@ -172,16 +172,20 @@ class FindSong():
                 break
         return cost  
         
-    def cost_c_try(self, song):
+    def cost_c_try(self, song, final_song=None):
         cost = 0
         #add the cost of two notes repeating the pitch
         cost = cost + 10*sum([1 for note1, note2 in zip(song[:-1], song[1:]) if note1[0] == note2[0]])
+        #add the cost of two notes repeating the duration
+        cost = cost + 10*sum([1 for note1, note2 in zip(song[:-1], song[1:]) if note1[1] == note2[1]])
         #add the cost of notes having too big of a pitch
-        cost = cost + sum([abs(note1[0] - note2[0])**2 for note1, note2 in zip(song[:-1], song[1:]) if not abs(note1[0] - note2[0]) == 1])
+        cost = cost + sum([abs(note1[0] - note2[0]) for note1, note2 in zip(song[:-1], song[1:]) if not abs(note1[0] - note2[0]) == 1])
         #add cost of notes having too big of a difference in duration
         cost = cost + sum([abs(note1[1] - note2[1]) if abs(note1[1] - note2[1]) > 1 else 1 for note1, note2 in zip(song[:-1], song[1:])])
         #add cost of long notes
-        cost = cost + 2*sum([1/note1[1] if not note1[1] == 0 else 2 for note1 in song])
+        cost = cost + 20*sum([1/note1[1] if not note1[1] == 0 else 2 for note1 in song])
+        #add cost for pauses
+        cost = cost + 10*sum([1 for note1 in song if note1[0] == 13])
         #add cost for keys
         cost = cost + sum([25 for note in song if note[0] not in self.keys[0]])
         #add cost for cords
@@ -206,7 +210,7 @@ class FindSong():
                         break
             duration = 0
             current_notes = []
-        return cost  
+        return cost 
 
     def cost_article2_try1(self, song, final_song=None):
         #Based on Article: Evolutionary Music and Fitness Functions by E. Bilotta, P. Pantano, and V. Talarico
