@@ -312,18 +312,27 @@ class FindSong():
             if random.random() > learning_rate:
                 if random.random() > 0.5:
                     if note != 13:
+                        note = note + 1
+                    else:
                         note = 1
+                        
                 else: 
                     if note != 1:
+                        note = note - 1
+                    else:
                         note = 13
             if random.random() > learning_rate:
                 if random.random() > 0.5:
-                    if note != 4:
+                    if duration != 4:
+                        duration = duration + 1
+                    else:
                         duration = 0
                 else: 
-                    if note != 0:
+                    if duration != 0:
+                        duration = duration - 1
+                    else:
                         duration = 4
-            mutated_song.append((note, duration))
+            mutated_song.append((note, int(duration)))
         return mutated_song
         
     def mutation_certain(self, song):
