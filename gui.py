@@ -43,6 +43,9 @@ class GenerateMusic(QtWidgets.QDialog):
         self.typesOfMusic.addItem("None")
         self.typesOfMusic.addItem("Basic")
         self.typesOfMusic.addItem("C Key Cords")
+        self.typesOfMusic.addItem("Article1")
+        self.typesOfMusic.addItem("Article2-1")
+        self.typesOfMusic.addItem("Article2-2")
         self.lengthOfMusic = QtWidgets.QDoubleSpinBox()
         self.lengthOfMusic.setRange(1, 100)
         self.lengthOfMusic.setValue(8)
@@ -77,8 +80,8 @@ class GenerateMusic(QtWidgets.QDialog):
         self.genSong.clicked.connect(self.checkInputedMusic)
         self.differentSongs.currentIndexChanged.connect(self.changeSong)
         self.stopButton.clicked.connect(self.stopLearning)
-        self.evolveExistingSong.clicked.connect(self.startEvolving)
-        self.evolveNewSong.clicked.connect(self.startEvolving2)
+        self.evolveExistingSong.clicked.connect(self.startEvolving2)
+        self.evolveNewSong.clicked.connect(self.startEvolving)
         self.iteration.clicked.connect(self.oneIteration)
         self.evolTimer.timeout.connect(self.oneIteration)
         self.playFinal.clicked.connect(self.playFinalSong)
@@ -105,7 +108,7 @@ class GenerateMusic(QtWidgets.QDialog):
             return None
         self.evolutionAlgoritm.evolutionary_algoritm()
         self.changeImage()
-        self.numIte.setText("Number of iteration: " + str(self.evolutionAlgoritm.iteration))
+        self.numIte.setText("Number of iteration: " + str(self.evolutionAlgoritm.iteration) + " - " + str(self.evolutionAlgoritm.current_evaluvation))
         if self.evolutionAlgoritm.stop == 0 and not self.evolutionAlgoritm.current_evaluvation > 0:
             self.executing = False
             self.numIte.setText("Number of iteration: " + str(self.evolutionAlgoritm.iteration) + ", (ended)")
@@ -114,12 +117,12 @@ class GenerateMusic(QtWidgets.QDialog):
             self.numIte.setText("Number of iteration: " + str(self.evolutionAlgoritm.iteration) + ", (ended)")
         
     def startEvolving(self):
-        self.evolutionAlgoritm = FindSong(song=None, filename="song_final.ly")
+        self.evolutionAlgoritm = FindSong(song=None, filename="song_final.ly", duration=int(self.lengthOfMusic.value()), type_of_evaluvation=self.typesOfMusic.currentText())
         self.executing = True
         self.evolTimer.start()
         
     def startEvolving2(self):
-        self.evolutionAlgoritm = FindSong(song=self.final_song_lilypond, filename="song_final.ly", duration=int(self.lengthOfMusic.value()), type_of_evaluvation=self.typesOfMusic.currentText())
+        self.evolutionAlgoritm = FindSong(song=self.final_song_lilypond, filename="song_final.ly")
         self.executing = True
         self.evolTimer.start()
         
