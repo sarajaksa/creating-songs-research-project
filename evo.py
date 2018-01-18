@@ -208,6 +208,15 @@ class FindSong():
             current_notes = []
         return cost  
 
+    def cost_article2_try1(self, song, final_song=None):
+        #Based on Article: Evolutionary Music and Fitness Functions by E. Bilotta, P. Pantano, and V. Talarico
+        cost = sum([1/((self.notes_values[note1[0]] + self.notes_values[note2[0]])/(self.notes_values[note1[0]]*self.notes_values[note2[0]])) for note1, note2 in zip(song[:-1], song[1:]) if note1[0] != 13 and note2[0] != 13])
+        #add cost of long notes
+        cost = cost + sum([1/note1[1] if not note1[1] == 0 else 2 for note1 in song])
+        #add cost for pauses
+        cost = cost + sum([1 for note1 in song if note1[0] == 13])
+        return cost
+
     def cost_article1_try(self, song, final_song=None):
         # Based on article: Minimal Fitness Functions in Genetic Algorithms for the Composition of Piano Music by Rodney Waschka II
         cost = 0
