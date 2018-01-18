@@ -105,7 +105,6 @@ class GenerateMusic(QtWidgets.QDialog):
     def oneIteration(self):
         if self.executing == False:
             self.evolTimer.stop()
-            return None
         self.evolutionAlgoritm.evolutionary_algoritm()
         self.changeImage()
         self.numIte.setText("Number of iteration: " + str(self.evolutionAlgoritm.iteration) + " - " + str(self.evolutionAlgoritm.current_evaluvation))
