@@ -110,6 +110,8 @@ class FindSong():
         crossover_point = random.randint(1, len(songs[0])-1)
         while len(songs) > 1:
             song1, song2 = songs.pop(), songs.pop(0)
+            song1 = [(note, int(dur)) for note, dur in song1]
+            song2 = [(note, int(dur)) for note, dur in song2]
             newsongs.append(song1[:crossover_point] + song2[crossover_point:])
             newsongs.append(song2[:crossover_point] + song1[crossover_point:])
         return newsongs
