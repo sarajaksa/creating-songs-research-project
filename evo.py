@@ -33,23 +33,25 @@ class FindSong():
         
         self.all_file_names = []
         if song:
-            self.algoritm = "known"
-            self.final_song = self.change_representation_to_number(song.split(" "))
+            self.cost_function = self.cost_evaluvation
             self.final_song_lilypond = song
-            self.songs = [self.create_random_sound(len(self.final_song)) for i in range(first_generation)]
-            self.current_evaluvation = max([self.cost_evaluvation(song, self.final_song) for song in self.songs])
+            self.final_song = self.change_representation_to_number(song.split(" "))
+            self.duration = len(self.final_song)
         else:
-            self.algoritm = "unknown"
-            if type_of_evaluvation:
-                self.type_of_evaluvation = type_of_evaluvation
+            if type_of_evaluvation == "C Key Cords":
+                self.cost_function = self.cost_c_try
+            elif type_of_evaluvation == "Article1":
+                self.cost_function = self.cost_article1_try
+            elif type_of_evaluvation == "Article2-1":
+                self.cost_function = self.cost_article2_try1
+            elif type_of_evaluvation == "Article2-2":
+                self.cost_function = self.cost_article2_try2
             else:
-                self.type_of_evaluvation = None
+                self.cost_function = self.cost_first_try
             self.duration = duration
-            self.songs = [self.create_random_sound(self.duration) for i in range(first_generation)]
-            if self.type_of_evaluvation == "C Key Cords":
-                self.current_evaluvation = max([self.cost_c_try(song) for song in self.songs])
-            else:
-                self.current_evaluvation = max([self.cost_first_try(song) for song in self.songs])
+            self.final_song = [] 
+        self.songs = [self.create_random_sound(self.duration) for i in range(first_generation)]
+        self.current_evaluvation = max([self.cost_function(song, self.final_song) for song in self.songs])
         self.iteration = 0
         self.learning_rate = learning_rate
         self.first_generation = first_generation
@@ -82,50 +84,17 @@ class FindSong():
         self.iteration += 1
         songs_crossover = self.crossover(self.songs)
         songs = self.generation(songs_crossover + self.songs, self.learning_rate, self.mutation_rate) + self.songs + songs_crossover
-        if self.algoritm == "known":
-            if self.selection == "elite":
-                cut_rate = min(sorted([self.cost_evaluvation(song, self.final_song) for song in songs])[:self.generation_size])
-            else:
-                cut_rate = max(sorted([self.cost_evaluvation(song, self.final_song) for song in songs])[:self.generation_size])
-            self.songs = [song for song in songs if self.cost_evaluvation(song, self.final_song) < cut_rate]
-            if not self.songs:
-                self.songs = [song for song in songs if self.cost_evaluvation(song, self.final_song) <= cut_rate][:self.generation_size]
-        if self.algoritm == "unknown":
-            if self.type_of_evaluvation == "C Key Cords":
-                if self.selection == "elite":
-                    cut_rate = min(sorted([self.cost_c_try(song) for song in songs])[:self.generation_size])
-                else:
-                    cut_rate = max(sorted([self.cost_c_try(song) for song in songs])[:self.generation_size])
-                self.songs = [song for song in songs if self.cost_c_try(song) < cut_rate]
-                if not self.songs:
-                    self.songs = [song for song in songs if self.cost_c_try(song) <= cut_rate][:self.generation_size]
-            else:
-                if self.selection == "elite":
-                    cut_rate = min(sorted([self.cost_first_try(song) for song in songs])[:self.generation_size])
-                else:
-                    cut_rate = max(sorted([self.cost_first_try(song) for song in songs])[:self.generation_size])
-                self.songs = [song for song in songs if self.cost_first_try(song) < cut_rate]
-                if not self.songs:
-                    self.songs = [song for song in songs if self.cost_first_try(song) <= cut_rate][:self.generation_size]
-        if self.remove_duplicate:
-            #Find a way to remove duplicates
-            pass
-        if self.algoritm == "known":
-            current_evaluvation = min([self.cost_evaluvation(song, self.final_song) for song in self.songs])
-        if self.algoritm == "unknown":
-            if self.type_of_evaluvation == "C Key Cords":
-                current_evaluvation = min([self.cost_c_try(song) for song in self.songs])
-            else:
-                current_evaluvation = min([self.cost_first_try(song) for song in self.songs])
+        if self.selection == "elite":
+            cut_rate = min(sorted([self.cost_function(song, self.final_song) for song in songs])[:self.generation_size])
+        else:
+            cut_rate = max(sorted([self.cost_function(song, self.final_song) for song in songs])[:self.generation_size])
+        self.songs = [song for song in songs if self.cost_function(song, self.final_song) < cut_rate] 
+        if not self.songs:
+            self.songs = [song for song in songs if self.cost_function(song, self.final_song) <= cut_rate][:self.generation_size]
+        current_evaluvation = min([self.cost_function(song, self.final_song) for song in self.songs])
         if self.current_evaluvation > current_evaluvation:
             self.current_evaluvation = current_evaluvation
-            if self.algoritm == "known":
-                self.write_music_to_file(self.filename, self.create_new_song(self.change_representation_to_lilypond([song for song in self.songs if self.cost_evaluvation(song, self.final_song) == self.current_evaluvation][0])))
-            if self.algoritm == "unknown":
-                if self.type_of_evaluvation == "C Key Cords":
-                    self.write_music_to_file(self.filename, self.create_new_song(self.change_representation_to_lilypond([song for song in self.songs if self.cost_c_try(song) == self.current_evaluvation][0])))
-                else:
-                    self.write_music_to_file(self.filename, self.create_new_song(self.change_representation_to_lilypond([song for song in self.songs if self.cost_first_try(song) == self.current_evaluvation][0])))
+            self.write_music_to_file(self.filename, self.create_new_song(self.change_representation_to_lilypond([(note, int(dur)) for note, dur in [song for song in self.songs if self.cost_function(song, self.final_song) == self.current_evaluvation][0]])))
         subprocess.call(["lilypond", "--png", self.filename], stdout=FNULL, stderr=subprocess.STDOUT)
 
     def crossover(self, songs):
@@ -156,7 +125,7 @@ class FindSong():
         return math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
 
         
-    def cost_first_try(self, song):
+    def cost_first_try(self, song, final_song=None):
         cost = 0
         #add the cost of two notes repeating the pitch
         cost = cost + sum([1 for note1, note2 in zip(song[:-1], song[1:]) if note1[0] == note2[0]])
